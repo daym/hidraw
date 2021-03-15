@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import _hidraw
+from . import _hidraw
 
 class Info(object):
 	def __init__(self, bustype = None, vendor = None, product = None):

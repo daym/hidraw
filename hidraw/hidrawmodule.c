@@ -2,6 +2,16 @@
 #include <sys/ioctl.h>
 #include <linux/hidraw.h>
 
+struct module_state {
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#error no
+static struct module_state _state;
+#endif
+
 static PyObject* get_info(PyObject *self, PyObject *args)
 {
 	struct hidraw_devinfo info;
@@ -20,21 +30,58 @@ static PyObject* get_info(PyObject *self, PyObject *args)
 #define HIDIOCGRDESC            _IOR('H', 0x02, struct hidraw_report_descriptor
 */
 
-static PyMethodDef HIDRAWMethods[] = {
+static PyMethodDef hidraw_methods[] = {
 	{"get_info",  get_info, METH_VARARGS, "Get HIDRAW device info."},
 	{NULL, NULL, 0, NULL}        /* Sentinel */
 };
+
+#if PY_MAJOR_VERSION >= 3
+
+static int hidraw_traverse(PyObject *m, visitproc visit, void *arg) {
+	//Py_VISIT(GETSTATE(m)->error);
+	return 0;
+}
+
+static int hidraw_clear(PyObject *m) {
+	//Py_CLEAR(GETSTATE(m)->error);
+	return 0;
+}
+
+static struct PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	"_hidraw",
+	NULL,
+	sizeof(struct module_state),
+	hidraw_methods,
+	NULL,
+	hidraw_traverse,
+	hidraw_clear,
+	NULL
+};
+
+PyMODINIT_FUNC
+PyInit__hidraw(void)
+{
+	PyObject *m;
+
+	m = PyModule_Create(&moduledef);
+	if (m == NULL) {
+		return NULL;
+	}
+	return m;
+}
+
+#else
 
 PyMODINIT_FUNC
 init_hidraw(void)
 {
 	PyObject *m;
 
-	m = Py_InitModule("_hidraw", HIDRAWMethods);
-	if (m == NULL)
+	m = Py_InitModule("_hidraw", hidraw_methods);
+	if (m == NULL) {
 		return;
-
-	/*SpamError = PyErr_NewException("spam.error", NULL, NULL);*/
-	/*PyModule_AddObject(m, "error", SpamError);*/
+	}
 }
 
+#endif
