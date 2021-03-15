@@ -23,7 +23,7 @@ static PyObject* get_info(PyObject *self, PyObject *args)
 		PyErr_SetFromErrno(PyExc_OSError);
 		return NULL;
 	}
-	return Py_BuildValue("Iii", (unsigned) info.bustype, (int) info.vendor, (int) info.product);
+	return Py_BuildValue("IHH", (unsigned) info.bustype, (unsigned short) info.vendor, (unsigned short) info.product);
 }
 /* TODO:
 #define HIDIOCGRDESCSIZE        _IOR('H', 0x01, int)
